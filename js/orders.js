@@ -493,6 +493,7 @@ class OrdersManager {
             order.items.push({
                 productId: product.id,
                 name: product.name,
+                is_rgb: product.is_rgb,
                 price: product.unit_price,
                 quantity: 1
             });
@@ -677,10 +678,10 @@ class OrdersManager {
         const customerName = document.getElementById('customerName').value || 'Walk-in Customer';
         const customerPhone = document.getElementById('customerPhone').value;
         const paymentMethod = document.getElementById('paymentMethod').value;
+        const amountTendered = parseFloat(document.getElementById('amountTendered').value) || 0;
 
         // Validate cash payment
         if (paymentMethod === 'cash') {
-            const amountTendered = parseFloat(document.getElementById('amountTendered').value) || 0;
             const total = parseFloat(document.getElementById('checkoutTotal').textContent.replace('$', ''));
             
             if (amountTendered < total) {
@@ -694,36 +695,66 @@ class OrdersManager {
 
         try {
             // Create order session
-            const sessionResult = await inventoryManager.apiRequest('/order/new', {
-                method: 'POST',
-                body: JSON.stringify({
-                    customer_name: customerName,
-                    customer_phone: customerPhone
-                })
-            });
+            // const sessionResult = await inventoryManager.apiRequest('/order/new', {
+            //     method: 'POST',
+            //     body: JSON.stringify({
+            //         customer_name: customerName,
+            //         customer_phone: customerPhone
+            //     })
+            // });
 
-            if (!sessionResult.success) {
-                throw new Error(sessionResult.message || 'Failed to create order session');
-            }
+            // if (!sessionResult.success) {
+            //     throw new Error(sessionResult.message || 'Failed to create order session');
+            // }
 
-            const sessionId = sessionResult.data.session_id || sessionResult.data.id;
+            // const sessionId = sessionResult.data.session_id || sessionResult.data.id;
+            // let savedOrderId = sessionId;
+
+            const data_items = [];
 
             // Add order items
             for (const item of order.items) {
-                const itemResult = await inventoryManager.apiRequest(`/save-order-item/${sessionId}`, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        product_id: item.productId,
-                        quantity: item.quantity,
-                        price: item.price
-                    })
+                data_items.push({
+                    product_id: item.productId,
+                    name: item.name,
+                    is_rgb: item.is_rgb,
+                    quantity: item.quantity,
+                    price: item.price
                 });
-
-                if (!itemResult.success) {
-                    throw new Error(`Failed to add item: ${item.name}`);
-                }
             }
+            const orderResult = await inventoryManager.apiRequest('/order/checkout', {
+                method: 'POST',
+                body: JSON.stringify({
+                    items: data_items,
+                    payment_method: paymentMethod,
+                    amount_paid: amountTendered
+                })
+            });
 
+            if (!orderResult.success) {
+                throw new Error(orderResult.message || 'Failed to complete order');
+            }
+            // savedOrderId = orderResult.data.order_id || savedOrderId;
+            
+
+            // Generate receipt data
+            const receiptData = {
+                orderId: savedOrderId,
+                orderNumber: order.number,
+                customerName: customerName,
+                customerPhone: customerPhone,
+                paymentMethod: paymentMethod,
+                amountTendered: amountTendered,
+                items: order.items,
+                subtotal: this.calculateOrderTotal(order),
+                // tax: this.calculateOrderTotal(order) * 0.1,
+                total: this.calculateOrderTotal(order),
+                timestamp: new Date()
+            };
+
+            // Show receipt
+            this.showReceipt(receiptData);
+            
             inventoryManager.showNotification('Order completed successfully!', 'success');
             this.closeCheckoutModal();
             this.closeOrderTab(orderId);
@@ -739,6 +770,7 @@ class OrdersManager {
         }
     }
 
+
     showActiveOrders() {
         this.renderActiveOrdersTable();
         document.getElementById('activeOrdersModal').classList.add('active');
@@ -747,6 +779,8 @@ class OrdersManager {
     closeActiveOrdersModal() {
         document.getElementById('activeOrdersModal').classList.remove('active');
     }
+
+    
 
     renderActiveOrdersTable() {
         const tableBody = document.getElementById('activeOrdersTableBody');
@@ -790,6 +824,278 @@ class OrdersManager {
                 </td>
             </tr>
         `).join('');
+    }
+
+    showReceipt(receiptData) {
+        this.generateReceiptContent(receiptData);
+        document.getElementById('receiptModal').classList.add('active');
+    }
+
+    closeReceiptModal() {
+        document.getElementById('receiptModal').classList.remove('active');
+    }
+
+    generateReceiptContent(receiptData) {
+        const receiptContent = document.getElementById('receiptContent');
+        
+        const change = receiptData.amountTendered - receiptData.total;
+        const changeDisplay = change > 0 ? `$${change.toFixed(2)}` : '$0.00';
+        
+        receiptContent.innerHTML = `
+            <div class="receipt-header">
+                <div class="receipt-company">${this.companyInfo.name}</div>
+                <div class="receipt-address">${this.companyInfo.address}</div>
+                <div class="receipt-city">${this.companyInfo.city}</div>
+                <div class="receipt-phone">${this.companyInfo.phone}</div>
+            </div>
+            
+            <div class="receipt-info">
+                <div class="receipt-row">
+                    <span class="receipt-label">Receipt #:</span>
+                    <span>${receiptData.orderNumber}</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Date:</span>
+                    <span>${this.formatReceiptDate(receiptData.timestamp)}</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Time:</span>
+                    <span>${this.formatReceiptTime(receiptData.timestamp)}</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Customer:</span>
+                    <span>${this.escapeHtml(receiptData.customerName)}</span>
+                </div>
+                ${receiptData.customerPhone ? `
+                <div class="receipt-row">
+                    <span class="receipt-label">Phone:</span>
+                    <span>${receiptData.customerPhone}</span>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div class="receipt-items">
+                <div class="receipt-item" style="border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 8px;">
+                    <div class="receipt-item-name"><strong>Item</strong></div>
+                    <div class="receipt-item-qty"><strong>Qty</strong></div>
+                    <div class="receipt-item-price"><strong>Price</strong></div>
+                    <div class="receipt-item-total"><strong>Total</strong></div>
+                </div>
+                ${receiptData.items.map(item => `
+                    <div class="receipt-item">
+                        <div class="receipt-item-name">${this.escapeHtml(item.name)}</div>
+                        <div class="receipt-item-qty">${item.quantity}</div>
+                        <div class="receipt-item-price">$${parseFloat(item.price).toFixed(2)}</div>
+                        <div class="receipt-item-total">$${(item.price * item.quantity).toFixed(2)}</div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="receipt-totals">
+                <div class="receipt-total-row">
+                    <span>Subtotal:</span>
+                    <span>$${receiptData.subtotal.toFixed(2)}</span>
+                </div>
+                <div class="receipt-total-row">
+                    <span>Tax (10%):</span>
+                    <span>$${receiptData.tax.toFixed(2)}</span>
+                </div>
+                <div class="receipt-total-row grand-total">
+                    <span>TOTAL:</span>
+                    <span>$${receiptData.total.toFixed(2)}</span>
+                </div>
+            </div>
+            
+            <div class="receipt-payment">
+                <div class="receipt-row">
+                    <span class="receipt-label">Payment Method:</span>
+                    <span>${this.formatPaymentMethod(receiptData.paymentMethod)}</span>
+                </div>
+                ${receiptData.paymentMethod === 'cash' ? `
+                <div class="receipt-row">
+                    <span class="receipt-label">Amount Tendered:</span>
+                    <span>$${receiptData.amountTendered.toFixed(2)}</span>
+                </div>
+                <div class="receipt-row">
+                    <span class="receipt-label">Change:</span>
+                    <span>${changeDisplay}</span>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div class="receipt-footer">
+                <div>Thank you for your business!</div>
+                <div>${this.companyInfo.website}</div>
+                <div style="margin-top: 10px;">
+                    <small>Items can be returned within 7 days with original receipt</small>
+                </div>
+            </div>
+            
+            <div class="receipt-actions">
+                <button class="btn btn-primary" onclick="ordersManager.printReceipt()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn btn-secondary" onclick="ordersManager.downloadReceipt()">
+                    <i class="fas fa-download"></i> Save as PDF
+                </button>
+            </div>
+        `;
+    }
+
+    formatReceiptDate(date) {
+        return new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    }
+
+    formatReceiptTime(date) {
+        return new Date(date).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    }
+
+    formatPaymentMethod(method) {
+        const methods = {
+            'cash': 'Cash',
+            'card': 'Credit/Debit Card',
+            'transfer': 'Bank Transfer',
+            'mobile': 'Mobile Money'
+        };
+        return methods[method] || method;
+    }
+
+    printReceipt() {
+        const receiptContent = document.getElementById('receiptContent').innerHTML;
+        const originalContent = document.body.innerHTML;
+        
+        // Create a print-friendly version
+        const printContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Receipt - Order ${this.getCurrentReceiptNumber()}</title>
+                <style>
+                    body {
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        line-height: 1.4;
+                        margin: 0;
+                        padding: 15px;
+                        color: #000;
+                    }
+                    .receipt {
+                        max-width: 80mm;
+                        margin: 0 auto;
+                    }
+                    .receipt-header {
+                        text-align: center;
+                        margin-bottom: 15px;
+                        padding-bottom: 10px;
+                        border-bottom: 2px dashed #000;
+                    }
+                    .receipt-company {
+                        font-weight: bold;
+                        font-size: 16px;
+                        margin-bottom: 3px;
+                    }
+                    .receipt-items {
+                        margin: 10px 0;
+                        border-top: 1px dashed #000;
+                        border-bottom: 1px dashed #000;
+                        padding: 8px 0;
+                    }
+                    .receipt-item {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 5px;
+                    }
+                    .receipt-total-row.grand-total {
+                        border-top: 2px solid #000;
+                        font-weight: bold;
+                        padding-top: 5px;
+                        margin-top: 5px;
+                    }
+                    .receipt-footer {
+                        text-align: center;
+                        margin-top: 15px;
+                        padding-top: 10px;
+                        border-top: 2px dashed #000;
+                        font-size: 11px;
+                    }
+                    @media print {
+                        body { margin: 0; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="receipt">
+                    ${document.getElementById('receiptContent').querySelector('.receipt').innerHTML}
+                </div>
+            </body>
+            </html>
+        `;
+        
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        
+        printWindow.onload = function() {
+            printWindow.print();
+            printWindow.onafterprint = function() {
+                printWindow.close();
+            };
+        };
+    }
+
+    downloadReceipt() {
+        const receiptContent = document.getElementById('receiptContent').innerHTML;
+        const blob = new Blob([`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Receipt - Order ${this.getCurrentReceiptNumber()}</title>
+                <style>
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        margin: 20px; 
+                        color: #333;
+                    }
+                    .receipt { max-width: 600px; margin: 0 auto; }
+                    .receipt-header { text-align: center; margin-bottom: 20px; }
+                    .receipt-company { font-size: 24px; font-weight: bold; }
+                    .receipt-items { margin: 20px 0; }
+                    .receipt-item { display: flex; justify-content: space-between; margin-bottom: 8px; }
+                    .receipt-total-row.grand-total { border-top: 2px solid #333; padding-top: 10px; }
+                </style>
+            </head>
+            <body>
+                <div class="receipt">
+                    ${document.getElementById('receiptContent').querySelector('.receipt').innerHTML}
+                </div>
+            </body>
+            </html>
+        `], { type: 'text/html' });
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `receipt-${this.getCurrentReceiptNumber()}.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    getCurrentReceiptNumber() {
+        const receiptContent = document.getElementById('receiptContent');
+        if (!receiptContent) return '000001';
+        
+        const receiptNumberElement = receiptContent.querySelector('.receipt-row span:last-child');
+        return receiptNumberElement ? receiptNumberElement.textContent : '000001';
     }
 
     escapeHtml(unsafe) {
