@@ -620,8 +620,8 @@ class OrdersManager {
         if (!order) return;
 
         const subtotal = this.calculateOrderTotal(order);
-        const tax = subtotal * 0.1;
-        const total = subtotal + tax;
+        // const tax = subtotal * 0.1;
+        const total = subtotal;
 
         document.getElementById('checkoutOrderId').value = orderId;
         document.getElementById('checkoutSubtotal').textContent = `₦${subtotal.toFixed(2)}`;
@@ -731,18 +731,21 @@ class OrdersManager {
                 })
             });
 
+            console.dir(orderResult);
+
             if (!orderResult.success) {
                 throw new Error(orderResult.message || 'Failed to complete order');
             }
+            let receiptNumber = orderResult.data.transaction_ref || 'N/A';
             // savedOrderId = orderResult.data.order_id || savedOrderId;
             
 
             // Generate receipt data
             const receiptData = {
-                orderId: savedOrderId,
-                orderNumber: order.number,
+                orderId: order.id,
+                orderNumber: receiptNumber,
                 customerName: customerName,
-                customerPhone: customerPhone,
+                // customerPhone: customerPhone,
                 paymentMethod: paymentMethod,
                 amountTendered: amountTendered,
                 items: order.items,
@@ -862,31 +865,22 @@ class OrdersManager {
                     <span class="receipt-label">Time:</span>
                     <span>${this.formatReceiptTime(receiptData.timestamp)}</span>
                 </div>
-                <div class="receipt-row">
-                    <span class="receipt-label">Customer:</span>
-                    <span>${this.escapeHtml(receiptData.customerName)}</span>
-                </div>
-                ${receiptData.customerPhone ? `
-                <div class="receipt-row">
-                    <span class="receipt-label">Phone:</span>
-                    <span>${receiptData.customerPhone}</span>
-                </div>
-                ` : ''}
+                
             </div>
             
             <div class="receipt-items">
                 <div class="receipt-item" style="border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 8px;">
                     <div class="receipt-item-name"><strong>Item</strong></div>
                     <div class="receipt-item-qty"><strong>Qty</strong></div>
-                    <div class="receipt-item-price"><strong>Price</strong></div>
-                    <div class="receipt-item-total"><strong>Total</strong></div>
+                    <div class="receipt-item-price"><strong>Price(&#8358;)</strong></div>
+                    <div class="receipt-item-total"><strong>Total(&#8358;)</strong></div>
                 </div>
                 ${receiptData.items.map(item => `
                     <div class="receipt-item">
                         <div class="receipt-item-name">${this.escapeHtml(item.name)}</div>
                         <div class="receipt-item-qty">${item.quantity}</div>
-                        <div class="receipt-item-price">$${parseFloat(item.price).toFixed(2)}</div>
-                        <div class="receipt-item-total">$${(item.price * item.quantity).toFixed(2)}</div>
+                        <div class="receipt-item-price">${parseFloat(item.price).toFixed(2)}</div>
+                        <div class="receipt-item-total">${(item.price * item.quantity).toFixed(2)}</div>
                     </div>
                 `).join('')}
             </div>
@@ -894,15 +888,11 @@ class OrdersManager {
             <div class="receipt-totals">
                 <div class="receipt-total-row">
                     <span>Subtotal:</span>
-                    <span>$${receiptData.subtotal.toFixed(2)}</span>
-                </div>
-                <div class="receipt-total-row">
-                    <span>Tax (10%):</span>
-                    <span>$${receiptData.tax.toFixed(2)}</span>
+                    <span>&#8358;${receiptData.subtotal.toFixed(2)}</span>
                 </div>
                 <div class="receipt-total-row grand-total">
                     <span>TOTAL:</span>
-                    <span>$${receiptData.total.toFixed(2)}</span>
+                    <span>&#8358;${receiptData.total.toFixed(2)}</span>
                 </div>
             </div>
             
@@ -914,17 +904,13 @@ class OrdersManager {
                 ${receiptData.paymentMethod === 'cash' ? `
                 <div class="receipt-row">
                     <span class="receipt-label">Amount Tendered:</span>
-                    <span>$${receiptData.amountTendered.toFixed(2)}</span>
-                </div>
-                <div class="receipt-row">
-                    <span class="receipt-label">Change:</span>
-                    <span>${changeDisplay}</span>
+                    <span>&#8358;${receiptData.amountTendered.toFixed(2)}</span>
                 </div>
                 ` : ''}
             </div>
             
             <div class="receipt-footer">
-                <div>Thank you for your business!</div>
+                <div>Thank you for your patronage!</div>
                 <div>${this.companyInfo.website}</div>
                 <div style="margin-top: 10px;">
                     <small>Items can be returned within 7 days with original receipt</small>
