@@ -955,113 +955,311 @@ class OrdersManager {
     }
 
     printReceipt() {
-        const receiptContent = document.getElementById('receiptContent').innerHTML;
-        const originalContent = document.body.innerHTML;
+        console.log('Starting print process...');
         
+        // Get the receipt content directly from the receipt modal
+        const receiptElement = document.getElementById('receiptContent');
+        if (!receiptElement) {
+            console.error('Receipt content element not found');
+            inventoryManager.showNotification('Receipt content not found', 'error');
+            return;
+        }
+
+        console.log('Receipt element found:', receiptElement);
+
         // Create a print-friendly version
         const printContent = `
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Receipt - Order ${this.getCurrentReceiptNumber()}</title>
+                <title>Receipt - Sahlat Store</title>
+                <meta charset="UTF-8">
                 <style>
                     body {
                         font-family: 'Courier New', monospace;
-                        font-size: 14px;
-                        line-height: 1.4;
+                        font-size: 12px;
+                        line-height: 1.2;
                         margin: 0;
-                        padding: 15px;
+                        padding: 5mm;
                         color: #000;
+                        background: white;
+                        width: 80mm;
+                    }
+                    * {
+                        box-sizing: border-box;
                     }
                     .receipt {
+                        width: 100%;
                         max-width: 80mm;
                         margin: 0 auto;
                     }
                     .receipt-header {
                         text-align: center;
-                        margin-bottom: 15px;
-                        padding-bottom: 10px;
-                        border-bottom: 2px dashed #000;
+                        margin-bottom: 10px;
+                        padding-bottom: 8px;
+                        border-bottom: 1px dashed #000;
                     }
                     .receipt-company {
                         font-weight: bold;
-                        font-size: 16px;
+                        font-size: 14px;
+                        margin-bottom: 2px;
+                        text-transform: uppercase;
+                    }
+                    .receipt-address, .receipt-city, .receipt-phone {
+                        font-size: 10px;
+                        margin-bottom: 1px;
+                    }
+                    .receipt-info {
+                        margin-bottom: 10px;
+                        font-size: 10px;
+                    }
+                    .receipt-row {
+                        display: flex;
+                        justify-content: space-between;
                         margin-bottom: 3px;
                     }
+                    .receipt-label {
+                        font-weight: bold;
+                    }
                     .receipt-items {
-                        margin: 10px 0;
+                        margin: 8px 0;
                         border-top: 1px dashed #000;
                         border-bottom: 1px dashed #000;
-                        padding: 8px 0;
+                        padding: 6px 0;
                     }
                     .receipt-item {
                         display: flex;
                         justify-content: space-between;
-                        margin-bottom: 5px;
+                        margin-bottom: 4px;
+                        font-size: 10px;
+                    }
+                    .receipt-item-name {
+                        flex: 2;
+                        text-align: left;
+                    }
+                    .receipt-item-qty {
+                        flex: 1;
+                        text-align: center;
+                    }
+                    .receipt-item-price {
+                        flex: 1;
+                        text-align: right;
+                    }
+                    .receipt-item-total {
+                        flex: 1;
+                        text-align: right;
+                        font-weight: bold;
+                    }
+                    .receipt-totals {
+                        margin: 8px 0;
+                        font-size: 11px;
+                    }
+                    .receipt-total-row {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 3px;
                     }
                     .receipt-total-row.grand-total {
-                        border-top: 2px solid #000;
+                        border-top: 1px solid #000;
                         font-weight: bold;
-                        padding-top: 5px;
-                        margin-top: 5px;
+                        font-size: 12px;
+                        padding-top: 4px;
+                        margin-top: 4px;
+                    }
+                    .receipt-payment {
+                        margin: 8px 0;
+                        padding-top: 6px;
+                        border-top: 1px dashed #000;
+                        font-size: 10px;
                     }
                     .receipt-footer {
                         text-align: center;
-                        margin-top: 15px;
-                        padding-top: 10px;
-                        border-top: 2px dashed #000;
-                        font-size: 11px;
+                        margin-top: 10px;
+                        padding-top: 8px;
+                        border-top: 1px dashed #000;
+                        font-size: 9px;
+                        color: #666;
+                    }
+                    .receipt-actions {
+                        display: none !important;
                     }
                     @media print {
-                        body { margin: 0; }
+                        body {
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .receipt {
+                            padding: 0;
+                        }
                     }
                 </style>
             </head>
             <body>
-                <div class="receipt">
-                    ${document.getElementById('receiptContent').querySelector('.receipt').innerHTML}
-                </div>
+                ${receiptElement.innerHTML}
             </body>
             </html>
         `;
         
-        const printWindow = window.open('', '_blank');
-        printWindow.document.write(printContent);
-        printWindow.document.close();
+        console.log('Creating print window...');
         
-        printWindow.onload = function() {
-            printWindow.print();
-            printWindow.onafterprint = function() {
-                printWindow.close();
-            };
-        };
+        try {
+            const printWindow = window.open('', '_blank', 'width=300,height=600');
+            if (!printWindow) {
+                throw new Error('Popup window blocked. Please allow popups for this site.');
+            }
+            
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            
+            // Wait for content to load
+            setTimeout(() => {
+                console.log('Printing...');
+                printWindow.print();
+                
+                // Close window after printing
+                printWindow.onafterprint = function() {
+                    console.log('Closing print window...');
+                    printWindow.close();
+                };
+                
+                // Fallback: close after 5 seconds if onafterprint doesn't fire
+                setTimeout(() => {
+                    if (!printWindow.closed) {
+                        printWindow.close();
+                    }
+                }, 5000);
+                
+            }, 500);
+            
+        } catch (error) {
+            console.error('Print error:', error);
+            inventoryManager.showNotification(
+                'Print failed: ' + error.message, 
+                'error'
+            );
+            
+            // Fallback: try direct printing
+            this.fallbackPrint(receiptElement.innerHTML);
+        }
+    }
+
+    fallbackPrint(receiptHtml) {
+        try {
+            const printFrame = document.createElement('iframe');
+            printFrame.style.display = 'none';
+            document.body.appendChild(printFrame);
+            
+            const printDoc = printFrame.contentWindow || printFrame.contentDocument;
+            if (printDoc.document) {
+                printDoc = printDoc.document;
+            }
+            
+            printDoc.open();
+            printDoc.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Receipt</title>
+                    <style>
+                        body { font-family: Arial; padding: 20px; }
+                    </style>
+                </head>
+                <body>
+                    ${receiptHtml}
+                </body>
+                </html>
+            `);
+            printDoc.close();
+            
+            printFrame.contentWindow.print();
+            
+            // Remove iframe after printing
+            setTimeout(() => {
+                document.body.removeChild(printFrame);
+            }, 1000);
+            
+        } catch (error) {
+            console.error('Fallback print also failed:', error);
+            inventoryManager.showNotification(
+                'Please use the browser print function (Ctrl+P) on this page.',
+                'error'
+            );
+        }
     }
 
     downloadReceipt() {
-        const receiptContent = document.getElementById('receiptContent').innerHTML;
+        const receiptElement = document.getElementById('receiptContent');
+        if (!receiptElement) {
+            inventoryManager.showNotification('Receipt content not found', 'error');
+            return;
+        }
+
+        const receiptNumber = this.getCurrentReceiptNumber();
+        const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        
         const blob = new Blob([`
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Receipt - Order ${this.getCurrentReceiptNumber()}</title>
+                <title>Receipt - Order ${receiptNumber}</title>
+                <meta charset="UTF-8">
                 <style>
-                    body { 
-                        font-family: Arial, sans-serif; 
-                        margin: 20px; 
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
                         color: #333;
+                        max-width: 600px;
+                        margin: 20px auto;
                     }
-                    .receipt { max-width: 600px; margin: 0 auto; }
-                    .receipt-header { text-align: center; margin-bottom: 20px; }
-                    .receipt-company { font-size: 24px; font-weight: bold; }
-                    .receipt-items { margin: 20px 0; }
-                    .receipt-item { display: flex; justify-content: space-between; margin-bottom: 8px; }
-                    .receipt-total-row.grand-total { border-top: 2px solid #333; padding-top: 10px; }
+                    .receipt {
+                        border: 1px solid #ddd;
+                        padding: 20px;
+                        border-radius: 8px;
+                        background: white;
+                    }
+                    .receipt-header {
+                        text-align: center;
+                        margin-bottom: 20px;
+                        padding-bottom: 15px;
+                        border-bottom: 2px solid #333;
+                    }
+                    .receipt-company {
+                        font-size: 24px;
+                        font-weight: bold;
+                        margin-bottom: 5px;
+                    }
+                    .receipt-items {
+                        margin: 15px 0;
+                        border-top: 1px solid #ddd;
+                        border-bottom: 1px solid #ddd;
+                        padding: 10px 0;
+                    }
+                    .receipt-item {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-bottom: 8px;
+                        padding: 4px 0;
+                    }
+                    .receipt-total-row.grand-total {
+                        border-top: 2px solid #333;
+                        padding-top: 10px;
+                        margin-top: 10px;
+                        font-weight: bold;
+                    }
+                    .receipt-footer {
+                        text-align: center;
+                        margin-top: 20px;
+                        padding-top: 15px;
+                        border-top: 1px solid #ddd;
+                        color: #666;
+                    }
+                    .receipt-actions {
+                        display: none;
+                    }
                 </style>
             </head>
             <body>
-                <div class="receipt">
-                    ${document.getElementById('receiptContent').querySelector('.receipt').innerHTML}
-                </div>
+                ${receiptElement.innerHTML}
             </body>
             </html>
         `], { type: 'text/html' });
@@ -1069,11 +1267,13 @@ class OrdersManager {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `receipt-${this.getCurrentReceiptNumber()}.html`;
+        a.download = `receipt-${receiptNumber}-${timestamp}.html`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        inventoryManager.showNotification('Receipt downloaded successfully', 'success');
     }
 
     getCurrentReceiptNumber() {
