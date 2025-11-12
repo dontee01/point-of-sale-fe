@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Sahlat Inventory</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/inventory.css">
+    <link rel="stylesheet" href="../css/reports.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo">
+                    <i class="fas fa-cube"></i>
+                    Sahlat
+                </a>
+                
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="../index.html">Dashboard</a></li>
+                    <li><a href="categories.html">Categories</a></li>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="orders.html">Orders</a></li>
+                    <li><a href="purchases.html">Purchases</a></li>
+                    <!-- <li><a href="discounts.html">Discounts</a></li> -->
+                    <li><a href="" class="active">Reports</a></li>
+                    <li><a href="#" class="btn btn-primary logout-btn">Logout</a></li>
+                </ul>
+                
+                <div class="mobile-menu" id="mobileMenu">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content reports-page">
+        <div class="container">
+            <div class="page-header">
+                <h1>Business Reports</h1>
+                <p>Analyze your sales, inventory, and business performance</p>
+            </div>
+
+            <!-- Date Filter -->
+            <div class="report-filters card">
+                <div class="filter-header">
+                    <h3>Report Period</h3>
+                    <button class="btn btn-secondary" id="resetFiltersBtn">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+                <div class="filter-controls">
+                    <div class="form-group">
+                        <label for="dateFrom">From Date</label>
+                        <input type="text" id="dateFrom" class="form-control datepicker" placeholder="Select start date">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateTo">To Date</label>
+                        <input type="text" id="dateTo" class="form-control datepicker" placeholder="Select end date">
+                    </div>
+                    <div class="form-group">
+                        <label for="reportPeriod">Quick Period</label>
+                        <select id="reportPeriod" class="form-control">
+                            <option value="custom">Custom Range</option>
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="this_week">This Week</option>
+                            <option value="last_week">Last Week</option>
+                            <option value="this_month">This Month</option>
+                            <option value="last_month">Last Month</option>
+                            <option value="this_quarter">This Quarter</option>
+                            <option value="last_quarter">Last Quarter</option>
+                            <option value="this_year">This Year</option>
+                            <option value="last_year">Last Year</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" id="applyFiltersBtn">
+                            <i class="fas fa-filter"></i> Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Navigation -->
+            <div class="reports-navigation">
+                <div class="report-tabs" id="reportTabs">
+                    <button class="report-tab active" data-report="sales">
+                        <i class="fas fa-chart-line"></i>
+                        Sales Report
+                    </button>
+                    <button class="report-tab" data-report="purchases">
+                        <i class="fas fa-shopping-cart"></i>
+                        Purchases Report
+                    </button>
+                    <button class="report-tab" data-report="inventory">
+                        <i class="fas fa-boxes"></i>
+                        Inventory Report
+                    </button>
+                    <button class="report-tab" data-report="products">
+                        <i class="fas fa-cube"></i>
+                        Products Performance
+                    </button>
+                    <button class="report-tab" data-report="categories">
+                        <i class="fas fa-tags"></i>
+                        Categories Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reports Content -->
+            <div class="reports-content">
+                
+                <!-- Sales Report -->
+                <div class="report-section active" id="salesReport">
+                    <div class="report-header">
+                        <h2>Sales Report</h2>
+                        <div class="report-actions">
+                            <button class="btn btn-secondary" onclick="reportsManager.exportReport('sales')">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <button class="btn btn-primary" onclick="reportsManager.printReport('sales')">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="report-summary">
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <div class="summary-icon sales">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="totalSales">$0.00</div>
+                                    <div class="summary-label">Total Sales</div>
+                                </div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-icon orders">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="totalOrders">0</div>
+                                    <div class="summary-label">Total Orders</div>
+                                </div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-icon average">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="averageOrder">$0.00</div>
+                                    <div class="summary-label">Average Order</div>
+                                </div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-icon items">
+                                    <i class="fas fa-cube"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="itemsSold">0</div>
+                                    <div class="summary-label">Items Sold</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-charts">
+                        <div class="chart-card">
+                            <h3>Sales Trend</h3>
+                            <div class="chart-container">
+                                <canvas id="salesTrendChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Sales by Category</h3>
+                            <div class="chart-container">
+                                <canvas id="salesCategoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-table">
+                        <div class="table-card">
+                            <h3>Recent Orders</h3>
+                            <div class="table-responsive">
+                                <table class="data-table" id="salesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Date</th>
+                                            <th>Customer</th>
+                                            <th>Items</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="salesTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center">No data available</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Purchases Report -->
+                <div class="report-section" id="purchasesReport">
+                    <div class="report-header">
+                        <h2>Purchases Report</h2>
+                        <div class="report-actions">
+                            <button class="btn btn-secondary" onclick="reportsManager.exportReport('purchases')">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <button class="btn btn-primary" onclick="reportsManager.printReport('purchases')">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="report-summary">
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <div class="summary-icon purchases">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="totalPurchases">$0.00</div>
+                                    <div class="summary-label">Total Purchases</div>
+                                </div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-icon suppliers">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="totalSuppliers">0</div>
+                                    <div class="summary-label">Suppliers</div>
+                                </div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-icon items-purchased">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="itemsPurchased">0</div>
+                                    <div class="summary-label">Items Purchased</div>
+                                </div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-icon average-purchase">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="averagePurchase">$0.00</div>
+                                    <div class="summary-label">Average Purchase</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-table">
+                        <div class="table-card">
+                            <h3>Purchase History</h3>
+                            <div class="table-responsive">
+                                <table class="data-table" id="purchasesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Reference</th>
+                                            <th>Date</th>
+                                            <th>Supplier</th>
+                                            <th>Items</th>
+                                            <th>Total Cost</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="purchasesTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center">No data available</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inventory Report -->
+                <div class="report-section" id="inventoryReport">
+                    <div class="report-header">
+                        <h2>Inventory Report</h2>
+                        <div class="report-actions">
+                            <button class="btn btn-secondary" onclick="reportsManager.exportReport('inventory')">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <button class="btn btn-primary" onclick="reportsManager.printReport('inventory')">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="report-summary">
+                        <div class="summary-cards">
+                            <div class="summary-card">
+                                <div class="summary-icon total-stock">
+                                    <i class="fas fa-boxes"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="totalStockValue">$0.00</div>
+                                    <div class="summary-label">Total Stock Value</div>
+                                </div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-icon low-stock">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="lowStockItems">0</div>
+                                    <div class="summary-label">Low Stock Items</div>
+                                </div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-icon out-of-stock">
+                                    <i class="fas fa-times-circle"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="outOfStockItems">0</div>
+                                    <div class="summary-label">Out of Stock</div>
+                                </div>
+                            </div>
+                            <div class="summary-card">
+                                <div class="summary-icon total-items">
+                                    <i class="fas fa-cubes"></i>
+                                </div>
+                                <div class="summary-info">
+                                    <div class="summary-value" id="totalItems">0</div>
+                                    <div class="summary-label">Total Items</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-charts">
+                        <div class="chart-card">
+                            <h3>Stock Distribution</h3>
+                            <div class="chart-container">
+                                <canvas id="stockDistributionChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Stock Value by Category</h3>
+                            <div class="chart-container">
+                                <canvas id="stockValueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-table">
+                        <div class="table-card">
+                            <h3>Low Stock Alert</h3>
+                            <div class="table-responsive">
+                                <table class="data-table" id="lowStockTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Current Stock</th>
+                                            <th>Reorder Level</th>
+                                            <th>Category</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lowStockTableBody">
+                                        <tr>
+                                            <td colspan="5" class="text-center">No low stock items</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Performance Report -->
+                <div class="report-section" id="productsReport">
+                    <div class="report-header">
+                        <h2>Products Performance</h2>
+                        <div class="report-actions">
+                            <button class="btn btn-secondary" onclick="reportsManager.exportReport('products')">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <button class="btn btn-primary" onclick="reportsManager.printReport('products')">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="report-table">
+                        <div class="table-card">
+                            <h3>Top Selling Products</h3>
+                            <div class="table-responsive">
+                                <table class="data-table" id="topProductsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Category</th>
+                                            <th>Units Sold</th>
+                                            <th>Revenue</th>
+                                            <th>Profit Margin</th>
+                                            <th>Performance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="topProductsTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center">No data available</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-charts">
+                        <div class="chart-card">
+                            <h3>Top 10 Products by Revenue</h3>
+                            <div class="chart-container">
+                                <canvas id="topProductsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories Report -->
+                <div class="report-section" id="categoriesReport">
+                    <div class="report-header">
+                        <h2>Categories Report</h2>
+                        <div class="report-actions">
+                            <button class="btn btn-secondary" onclick="reportsManager.exportReport('categories')">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <button class="btn btn-primary" onclick="reportsManager.printReport('categories')">
+                                <i class="fas fa-print"></i> Print
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="report-table">
+                        <div class="table-card">
+                            <h3>Categories Performance</h3>
+                            <div class="table-responsive">
+                                <table class="data-table" id="categoriesTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Products</th>
+                                            <th>Units Sold</th>
+                                            <th>Revenue</th>
+                                            <th>Avg. Price</th>
+                                            <th>Performance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="categoriesTableBody">
+                                        <tr>
+                                            <td colspan="6" class="text-center">No data available</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-charts">
+                        <div class="chart-card">
+                            <h3>Revenue by Category</h3>
+                            <div class="chart-container">
+                                <canvas id="categoriesRevenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Generating Report...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- <script src="../js/flatpickr.js"></script>
+    <script src="../js/chart.js"></script> -->
+    <script src="../js/script.js"></script>
+    <script src="../js/inventory.js"></script>
+    <script src="../js/reports.js"></script>
+</body>
+</html>

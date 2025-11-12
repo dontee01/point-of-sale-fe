@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Sahlat Inventory</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/inventory.css">
+    <link rel="stylesheet" href="../css/reports.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo">
+                    <i class="fas fa-cube"></i>
+                    Sahlat
+                </a>
+                
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="index.html">Dashboard</a></li>
+                    <li><a href="categories.html">Categories</a></li>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="orders.html">Orders</a></li>
+                    <li><a href="purchases.html">Purchases</a></li>
+                    <li><a href="discounts.html">Discounts</a></li>
+                    <li><a href="reports.html" class="active">Reports</a></li>
+                    <li><a href="#" class="btn btn-primary logout-btn">Logout</a></li>
+                </ul>
+                
+                <div class="mobile-menu" id="mobileMenu">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content reports-page">
+        <div class="container">
+            <div class="page-header">
+                <h1>Sales Reports</h1>
+                <p>Analyze your sales performance with detailed insights and filtering</p>
+            </div>
+
+            <!-- Quick Stats Dashboard -->
+            <div class="dashboard-stats card">
+                <div class="stats-header">
+                    <h3>Today's Overview</h3>
+                    <button class="btn btn-secondary" id="refreshDashboard">
+                        <i class="fas fa-redo"></i> Refresh
+                    </button>
+                </div>
+                <div class="stats-grid" id="dashboardStats">
+                    <div class="stat-card">
+                        <div class="stat-icon today">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="todaySales">$0.00</div>
+                            <div class="stat-label">Today's Sales</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yesterday">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="yesterdaySales">$0.00</div>
+                            <div class="stat-label">Yesterday's Sales</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon month">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="thisMonthSales">$0.00</div>
+                            <div class="stat-label">This Month</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon customers">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="todayCustomers">0</div>
+                            <div class="stat-label">Today's Customers</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon pending">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="pendingPayments">0</div>
+                            <div class="stat-label">Pending Payments</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon last-month">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="lastMonthSales">$0.00</div>
+                            <div class="stat-label">Last Month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Filters -->
+            <div class="report-filters card">
+                <div class="filter-header">
+                    <h3>Report Filters</h3>
+                    <button class="btn btn-secondary" id="resetFiltersBtn">
+                        <i class="fas fa-redo"></i> Reset Filters
+                    </button>
+                </div>
+                <div class="filter-controls">
+                    <div class="form-group">
+                        <label for="dateFrom">From Date</label>
+                        <input type="text" id="dateFrom" class="form-control datepicker" placeholder="Select start date">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateTo">To Date</label>
+                        <input type="text" id="dateTo" class="form-control datepicker" placeholder="Select end date">
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentStatus">Payment Status</label>
+                        <select id="paymentStatus" class="form-control">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="partial">Partial</option>
+                            <option value="refunded">Refunded</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentMethod">Payment Method</label>
+                        <select id="paymentMethod" class="form-control">
+                            <option value="">All Methods</option>
+                            <option value="cash">Cash</option>
+                            <option value="card">Card</option>
+                            <option value="transfer">Transfer</option>
+                            <option value="wallet">Wallet</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="groupBy">Group By</label>
+                        <select id="groupBy" class="form-control">
+                            <option value="">No Grouping</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary" id="generateReportBtn">
+                            <i class="fas fa-chart-bar"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Summary -->
+            <div class="report-summary card" id="reportSummary" style="display: none;">
+                <div class="summary-header">
+                    <h3>Report Summary</h3>
+                    <div class="summary-actions">
+                        <button class="btn btn-secondary" onclick="salesReportsManager.exportReport()">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                        <button class="btn btn-primary" onclick="salesReportsManager.printReport()">
+                            <i class="fas fa-print"></i> Print Report
+                        </button>
+                    </div>
+                </div>
+                <div class="summary-cards" id="summaryCards">
+                    <!-- Summary cards will be populated here -->
+                </div>
+            </div>
+
+            <!-- Report Content -->
+            <div class="report-content">
+                <!-- Sales Trend Chart -->
+                <div class="chart-section card" id="trendChartSection" style="display: none;">
+                    <div class="chart-header">
+                        <h3>Sales Trend</h3>
+                        <div class="chart-actions">
+                            <select id="chartType" class="form-control">
+                                <option value="line">Line Chart</option>
+                                <option value="bar">Bar Chart</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="salesTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Payment Methods Breakdown -->
+                <div class="chart-section card" id="paymentMethodsSection" style="display: none;">
+                    <div class="chart-header">
+                        <h3>Payment Methods Breakdown</h3>
+                    </div>
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <canvas id="paymentMethodsChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="paymentStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sales Data Table -->
+                <div class="table-section card" id="salesTableSection" style="display: none;">
+                    <div class="table-header">
+                        <h3>Sales Data</h3>
+                        <div class="table-actions">
+                            <div class="pagination-info" id="paginationInfo"></div>
+                            <div class="pagination-controls">
+                                <button class="btn btn-sm btn-secondary" id="prevPageBtn" disabled>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <span class="page-info" id="pageInfo">Page 1</span>
+                                <button class="btn btn-sm btn-secondary" id="nextPageBtn" disabled>
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="salesDataTable">
+                            <thead>
+                                <tr>
+                                    <th>Transaction Ref</th>
+                                    <th>Date</th>
+                                    <th>Quantity</th>
+                                    <th>Total Amount</th>
+                                    <th>Amount Paid</th>
+                                    <th>Payment Method</th>
+                                    <th>Payment Status</th>
+                                    <th>User</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTableBody">
+                                <!-- Sales data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Grouped Data Table -->
+                <div class="table-section card" id="groupedTableSection" style="display: none;">
+                    <div class="table-header">
+                        <h3 id="groupedTableTitle">Grouped Sales Data</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="groupedDataTable">
+                            <thead>
+                                <tr>
+                                    <th id="groupedPeriodHeader">Period</th>
+                                    <th>Transactions</th>
+                                    <th>Total Quantity</th>
+                                    <th>Total Sales</th>
+                                    <th>Amount Paid</th>
+                                    <th>Average Sale</th>
+                                    <th>Unique Customers</th>
+                                </tr>
+                            </thead>
+                            <tbody id="groupedTableBody">
+                                <!-- Grouped data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Generating Report...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="../js/script.js"></script>
+    <script src="../js/inventory.js"></script>
+    <script src="../js/sales-reports.js"></script>
+</body>
+</html>
