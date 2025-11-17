@@ -272,8 +272,8 @@ class SalesReportsManager {
                 <td>${sale.transaction_ref || 'N/A'}</td>
                 <td>${inventoryManager.formatDate(sale.created_at)}</td>
                 <td>${sale.quantity || 0}</td>
-                <td>$${parseFloat(sale.total || 0).toFixed(2)}</td>
-                <td>$${parseFloat(sale.amount_paid || 0).toFixed(2)}</td>
+                <td>&#8358;${parseFloat(sale.total || 0).toFixed(2)}</td>
+                <td>&#8358;${parseFloat(sale.amount_paid || 0).toFixed(2)}</td>
                 <td>${sale.payment_method || 'N/A'}</td>
                 <td>
                     <span class="status-badge status-${sale.payment_status || 'pending'}">

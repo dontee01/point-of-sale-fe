@@ -1,7 +1,7 @@
 // Inventory Management Base JavaScript
 class InventoryManager {
     constructor() {
-        this.apiBaseUrl = 'http://sahlat.test/api'; // Update with your API base URL
+        this.apiBaseUrl = 'https://api.sahlat.com.ng/public/api'; // Update with your API base URL
         this.csrfToken = this.getCsrfToken();
         this.init();
     }
