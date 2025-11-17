@@ -402,21 +402,21 @@ class ReportsManager {
 
     // Update UI Methods
     updateSalesSummary(summary) {
-        document.getElementById('totalSales').textContent = `$${summary.totalSales.toFixed(2)}`;
+        document.getElementById('totalSales').textContent = `&#8358;${summary.totalSales.toFixed(2)}`;
         document.getElementById('totalOrders').textContent = summary.totalOrders;
-        document.getElementById('averageOrder').textContent = `$${summary.averageOrder.toFixed(2)}`;
+        document.getElementById('averageOrder').textContent = `&#8358;${summary.averageOrder.toFixed(2)}`;
         document.getElementById('itemsSold').textContent = summary.itemsSold;
     }
 
     updatePurchasesSummary(summary) {
-        document.getElementById('totalPurchases').textContent = `$${summary.totalPurchases.toFixed(2)}`;
+        document.getElementById('totalPurchases').textContent = `&#8358;${summary.totalPurchases.toFixed(2)}`;
         document.getElementById('totalSuppliers').textContent = summary.totalSuppliers;
         document.getElementById('itemsPurchased').textContent = summary.itemsPurchased;
-        document.getElementById('averagePurchase').textContent = `$${summary.averagePurchase.toFixed(2)}`;
+        document.getElementById('averagePurchase').textContent = `&#8358;${summary.averagePurchase.toFixed(2)}`;
     }
 
     updateInventorySummary(summary) {
-        document.getElementById('totalStockValue').textContent = `$${summary.totalStockValue.toFixed(2)}`;
+        document.getElementById('totalStockValue').textContent = `&#8358;${summary.totalStockValue.toFixed(2)}`;
         document.getElementById('lowStockItems').textContent = summary.lowStockItems;
         document.getElementById('outOfStockItems').textContent = summary.outOfStockItems;
         document.getElementById('totalItems').textContent = summary.totalItems;

@@ -114,10 +114,10 @@ class SalesReportsManager {
     }
 
     updateDashboardStats(data) {
-        document.getElementById('todaySales').textContent = `$${parseFloat(data.today_sales || 0).toFixed(2)}`;
-        document.getElementById('yesterdaySales').textContent = `$${parseFloat(data.yesterday_sales || 0).toFixed(2)}`;
-        document.getElementById('thisMonthSales').textContent = `$${parseFloat(data.this_month_sales || 0).toFixed(2)}`;
-        document.getElementById('lastMonthSales').textContent = `$${parseFloat(data.last_month_sales || 0).toFixed(2)}`;
+        document.getElementById('todaySales').textContent = `₦${parseFloat(data.today_sales || 0).toFixed(2)}`;
+        document.getElementById('yesterdaySales').textContent = `₦${parseFloat(data.yesterday_sales || 0).toFixed(2)}`;
+        document.getElementById('thisMonthSales').textContent = `₦${parseFloat(data.this_month_sales || 0).toFixed(2)}`;
+        document.getElementById('lastMonthSales').textContent = `₦${parseFloat(data.last_month_sales || 0).toFixed(2)}`;
         document.getElementById('todayCustomers').textContent = data.total_customers_today || 0;
         document.getElementById('pendingPayments').textContent = data.pending_payments || 0;
     }
@@ -141,6 +141,8 @@ class SalesReportsManager {
             }
 
             const result = await inventoryManager.apiRequest(`/sales-report?${params}`);
+            // console.dir(result);
+            console.log("TEST RES");
             
             if (result.success) {
                 this.currentReport = result;
@@ -160,6 +162,9 @@ class SalesReportsManager {
     displayReport(report) {
         // Show report summary section
         document.getElementById('reportSummary').style.display = 'block';
+        console.log("TEST REPT");
+        report = report.data;
+        // console.dir(report.summary.overview);
         
         // Update summary cards
         this.updateSummaryCards(report.summary);
@@ -179,6 +184,8 @@ class SalesReportsManager {
     }
 
     updateSummaryCards(summary) {
+        console.log("TEST SUMM");
+        console.dir(summary);
         const overview = summary.overview || {};
         const cardsContainer = document.getElementById('summaryCards');
         
@@ -188,15 +195,15 @@ class SalesReportsManager {
                 <div class="label">Total Transactions</div>
             </div>
             <div class="summary-card">
-                <div class="value">$${parseFloat(overview.gross_sales || 0).toFixed(2)}</div>
+                <div class="value">&#8358;${parseFloat(overview.gross_sales || 0).toFixed(2)}</div>
                 <div class="label">Gross Sales</div>
             </div>
             <div class="summary-card">
-                <div class="value">$${parseFloat(overview.net_sales || 0).toFixed(2)}</div>
+                <div class="value">&#8358;${parseFloat(overview.net_sales || 0).toFixed(2)}</div>
                 <div class="label">Net Sales</div>
             </div>
             <div class="summary-card">
-                <div class="value">$${parseFloat(overview.average_transaction_value || 0).toFixed(2)}</div>
+                <div class="value">&#8358;${parseFloat(overview.average_transaction_value || 0).toFixed(2)}</div>
                 <div class="label">Average Transaction</div>
             </div>
             <div class="summary-card">

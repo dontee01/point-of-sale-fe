@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchases - Sahlat Inventory</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/inventory.css">
+    <link rel="stylesheet" href="../css/purchases.css">
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo">
+                    <i class="fas fa-cube"></i>
+                    Sahlat
+                </a>
+                
+                <ul class="nav-links" id="navLinks">
+                    <li><a href="../index.html">Dashboard</a></li>
+                    <li><a href="categories.html">Categories</a></li>
+                    <li><a href="products.html">Products</a></li>
+                    <li><a href="orders.html">Orders</a></li>
+                    <li><a href="purchases.html" class="active">Purchases</a></li>
+                    <!-- <li><a href="discounts.html">Discounts</a></li> -->
+                    <li><a href="reports.html">Reports</a></li>
+                    <li><a href="#" class="btn btn-primary logout-btn">Logout</a></li>
+                </ul>
+                
+                <div class="mobile-menu" id="mobileMenu">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content purchases-page">
+        <div class="container">
+            <div class="page-header">
+                <h1>Purchase Management</h1>
+                <p>Manage inventory purchases and supplier orders</p>
+                <button class="btn btn-primary" id="newPurchaseBtn">
+                    <i class="fas fa-plus"></i> New Purchase
+                </button>
+            </div>
+
+            <!-- Purchases List -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Recent Purchases</h3>
+                    <div class="search-box">
+                        <input type="text" id="searchPurchases" placeholder="Search purchases...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="data-table" id="purchasesTable">
+                            <thead>
+                                <tr>
+                                    <th>Purchase Session</th>
+                                    <th>Product</th>
+                                    <th>Supplier</th>
+                                    <th>Quantity</th>
+                                    <th>Cost Price (&#8358;)</th>
+                                    <th>Unit Price (&#8358;)</th>
+                                    <th>Total (&#8358;)</th>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchasesTableBody">
+                                <tr>
+                                    <td colspan="10" class="text-center">
+                                        <div class="loading-spinner">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                            Loading purchases...
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- New Purchase Modal -->
+    <div class="modal" id="purchaseModal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h3>New Purchase Order</h3>
+                <button class="close-btn" id="closePurchaseModal">&times;</button>
+            </div>
+            <form id="purchaseForm">
+                <div class="modal-body">
+                    <div class="purchase-items">
+                        <div class="items-header">
+                            <h4>Purchase Items</h4>
+                            <button type="button" class="btn btn-secondary" id="addItemBtn">
+                                <i class="fas fa-plus"></i> Add Item
+                            </button>
+                        </div>
+                        
+                        <div class="items-list" id="purchaseItemsList">
+                            <!-- Purchase items will be added here dynamically -->
+                            <div class="empty-items">
+                                <i class="fas fa-cart-plus"></i>
+                                <p>No items added yet. Click "Add Item" to start.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="purchase-summary">
+                        <h4>Purchase Summary</h4>
+                        <div class="summary-details">
+                            <div class="summary-row">
+                                <span>Total Items:</span>
+                                <span id="totalItemsCount">0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Total Quantity:</span>
+                                <span id="totalQuantity">0</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Total Cost:</span>
+                                <span id="totalCost">&#8358;0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelPurchaseBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitPurchaseBtn">
+                        <span class="btn-text">Submit Purchase</span>
+                        <span class="btn-loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Processing...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Product to Purchase</h3>
+                <button class="close-btn" id="closeAddProductModal">&times;</button>
+            </div>
+            <form id="addProductForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editItemIndex">
+                    
+                    <div class="form-group">
+                        <label for="purchaseProduct">Product *</label>
+                        <select id="purchaseProduct" class="form-control" required>
+                            <option value="">Select Product</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="supplierName">Supplier Name *</label>
+                        <input type="text" id="supplierName" class="form-control" placeholder="Enter supplier name" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="costPrice">Cost Price *</label>
+                            <input type="number" id="costPrice" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="unitPrice">Unit Price *</label>
+                            <input type="number" id="unitPrice" class="form-control" step="0.01" min="0" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="purchaseQuantity">Quantity *</label>
+                        <input type="number" id="purchaseQuantity" class="form-control" min="1" value="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="isRgb">
+                            <span class="checkmark"></span>
+                            This is an RGB product (affects stock calculation)
+                        </label>
+                        <small class="form-text">
+                            RGB products update content quantity and reduce bottle quantity
+                        </small>
+                    </div>
+
+                    <div class="rgb-info" id="rgbInfo" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>RGB Product:</strong> This purchase will increase content quantity and decrease bottle quantity in stock.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelAddProductBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="saveProductBtn">
+                        <span class="btn-text">Add to Purchase</span>
+                        <span class="btn-loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Adding...
+                        </span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Purchase Details Modal -->
+    <div class="modal" id="purchaseDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Purchase Details</h3>
+                <button class="close-btn" id="closeDetailsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="purchaseDetailsContent">
+                    <!-- Purchase details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="closeDetailsBtn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/script.js"></script>
+    <script src="../js/inventory.js"></script>
+    <script src="../js/purchases.js"></script>
+</body>
+</html>

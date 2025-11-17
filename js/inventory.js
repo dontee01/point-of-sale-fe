@@ -76,7 +76,7 @@ class InventoryManager {
             const data = await response.json();
             return { success: true, data };
         } catch (error) {
-            console.error('API request failed:', error);
+            console.error('API request failed:', error.message);
             return { 
                 success: false, 
                 error: error.message,
